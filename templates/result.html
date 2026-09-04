@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if not_found %}Parcel Not Found — Delimovi{% else %}{{ parcel.tracking_number }} Tracking Details — Delimovi{% endif %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['Space Grotesk', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="min-h-full bg-slate-950 text-slate-100 font-sans antialiased selection:bg-amber-500 selection:text-slate-950">
+
+    <!-- Header Navigation -->
+    <header class="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/20 text-slate-950 font-black tracking-wider text-xl font-mono group-hover:scale-105 transition-transform">
+                    D
+                </div>
+                <div>
+                    <span class="text-xl font-bold tracking-tight text-white font-mono">DELIMOVI</span>
+                    <span class="text-[10px] uppercase font-bold tracking-widest text-amber-400 block -mt-1">LOGISTICS NETWORK</span>
+                </div>
+            </a>
+
+            <!-- Quick Track Header Search -->
+            <form action="/track" method="POST" class="hidden md:flex items-center gap-2 max-w-sm w-full">
+                <input 
+                    type="text" 
+                    name="tracking_number" 
+                    placeholder="Search another tracking ID..." 
+                    class="bg-slate-950 border border-slate-700/80 rounded-lg px-3 py-1.5 text-xs text-white font-mono uppercase focus:outline-none focus:border-amber-500 w-full"
+                />
+                <button type="submit" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs font-mono">
+                    Search
+                </button>
+            </form>
+
+            <a href="/" class="text-xs text-slate-400 hover:text-amber-400 font-mono flex items-center gap-1.5 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                Back to Home
+            </a>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+
+        {% if not_found %}
+        <!-- Not Found State -->
+        <div class="max-w-xl mx-auto text-center py-12 bg-slate-900 border border-slate-800 rounded-2xl p-8">
+            <div class="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            </div>
+            <h2 class="text-2xl font-bold text-white mb-2 font-mono">Tracking ID Not Found</h2>
+            <p class="text-slate-400 text-sm mb-6">
+                No active consignment was found matching <span class="text-amber-400 font-mono font-semibold">{{ tracking_number }}</span>. Please verify the code and retry.
+            </p>
+
+            <div class="mb-6 pt-4 border-t border-slate-800 text-left">
+                <p class="text-xs text-slate-400 mb-2 font-semibold uppercase tracking-wider">Try one of our active sample parcels:</p>
+                <div class="flex flex-wrap gap-2">
+                    {% for code in sample_codes %}
+                    <a href="/track?tracking_number={{ code }}" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 font-mono text-xs">{{ code }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <a href="/" class="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-6 py-2.5 rounded-xl text-sm font-mono transition-all">
+                Try Another Search
+            </a>
+        </div>
+
+        {% else %}
+        <!-- Tracking Result Content -->
+
+        <!-- Top Overview Banner -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 mb-8 shadow-xl">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 pb-6 border-b border-slate-800">
+                <div>
+                    <div class="flex flex-wrap items-center gap-3 mb-2">
+                        <span class="text-xs uppercase font-bold tracking-widest text-slate-400">WAYBILL TRACKING ID</span>
+                        <span class="px-3 py-0.5 rounded-full text-xs font-mono font-bold
+                            {% if parcel.status == 'Delivered' %}bg-emerald-500/20 text-emerald-300 border border-emerald-500/40
+                            {% elif parcel.status == 'Out for Delivery' %}bg-amber-500/20 text-amber-300 border border-amber-500/40
+                            {% elif parcel.status == 'Customs Clearance' %}bg-purple-500/20 text-purple-300 border border-purple-500/40
+                            {% else %}bg-sky-500/20 text-sky-300 border border-sky-500/40{% endif %}">
+                            ● {{ parcel.status }}
+                        </span>
+                        <span class="text-xs text-slate-400 font-mono bg-slate-800 px-2 py-0.5 rounded border border-slate-700">{{ parcel.service_tier }}</span>
+                    </div>
+                    <h1 class="text-3xl sm:text-4xl font-extrabold text-white font-mono tracking-tight">{{ parcel.tracking_number }}</h1>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-3">
+                    <button onclick="window.print()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-mono text-slate-200 flex items-center gap-2 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                        Print Waybill
+                    </button>
+                    <button onclick="navigator.clipboard.writeText(window.location.href); alert('Tracking link copied to clipboard!');" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs font-mono flex items-center gap-2 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+                        Share Link
+                    </button>
+                </div>
+            </div>
+
+            <!-- Estimated Delivery & Progress -->
+            <div class="mt-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                    <div>
+                        <span class="text-xs uppercase font-bold tracking-wider text-slate-400">ESTIMATED ARRIVAL</span>
+                        <div class="text-2xl font-extrabold text-amber-400 font-mono">{{ parcel.eta }}</div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs font-mono text-slate-400">Transit Progress</span>
+                        <div class="text-xl font-bold text-white font-mono">{{ parcel.progress_percent }}%</div>
+                    </div>
+                </div>
+
+                <!-- Animated Bar -->
+                <div class="w-full bg-slate-800 rounded-full h-3.5 p-0.5 overflow-hidden border border-slate-700">
+                    <div class="h-full rounded-full bg-gradient-to-r from-amber-500 to-emerald-400 transition-all duration-1000" style="width: {{ parcel.progress_percent }}%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2 Column Layout: Timeline & Package Specs -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Left: Timeline (2 cols) -->
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-800">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full bg-amber-500 animate-ping"></div>
+                            <h2 class="text-xl font-bold text-white font-mono">Live Milestone Timeline</h2>
+                        </div>
+                        <span class="text-xs font-mono text-slate-400">{{ parcel.history|length }} Scans Logged</span>
+                    </div>
+
+                    <!-- Steps Timeline -->
+                    <div class="space-y-6 relative before:absolute before:top-3 before:bottom-3 before:left-3.5 before:w-0.5 before:bg-slate-800">
+                        {% for event in parcel.history %}
+                        <div class="relative flex items-start gap-4 pl-1">
+                            <!-- Bullet -->
+                            <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 z-10 
+                                {% if event.is_current %}bg-amber-500 text-slate-950 ring-4 ring-amber-500/20
+                                {% else %}bg-slate-800 text-slate-400 border border-slate-700{% endif %}">
+                                {% if event.is_current %}✓{% else %}•{% endif %}
+                            </div>
+
+                            <!-- Detail Content -->
+                            <div class="flex-1 bg-slate-950/80 border {% if event.is_current %}border-amber-500/40 shadow-lg shadow-amber-500/5{% else %}border-slate-800/80{% endif %} rounded-xl p-4">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
+                                    <h3 class="font-bold text-sm {% if event.is_current %}text-amber-400{% else %}text-white{% endif %}">{{ event.status }}</h3>
+                                    <span class="text-xs font-mono text-slate-400">{{ event.timestamp }}</span>
+                                </div>
+                                <div class="text-xs text-sky-400 font-mono mb-2 flex items-center gap-1">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                    {{ event.location }}
+                                </div>
+                                <p class="text-xs text-slate-300 leading-relaxed">{{ event.description }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Details & Courier Card (1 col) -->
+            <div class="space-y-6">
+
+                <!-- Assigned Courier -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                    <h3 class="text-xs uppercase font-bold tracking-wider text-slate-400 mb-4 font-mono">Assigned Logistics Driver</h3>
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-amber-400 font-mono font-bold text-lg">
+                            {{ parcel.courier.name[:2]|upper }}
+                        </div>
+                        <div>
+                            <div class="font-bold text-white text-sm">{{ parcel.courier.name }}</div>
+                            <div class="text-xs text-slate-400 font-mono">Badge: {{ parcel.courier.id }}</div>
+                            <div class="text-xs text-amber-400 font-mono">★ {{ parcel.courier.rating }} Rating</div>
+                        </div>
+                    </div>
+                    <div class="space-y-2 text-xs font-mono text-slate-300 bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Vehicle:</span>
+                            <span>{{ parcel.courier.vehicle }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Current Zone:</span>
+                            <span>{{ parcel.courier.current_zone }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Parcel Specifications -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+                    <h3 class="text-xs uppercase font-bold tracking-wider text-slate-400 font-mono">Consignment Specifications</h3>
+                    
+                    <div class="space-y-2.5 text-xs">
+                        <div class="flex justify-between py-1.5 border-b border-slate-800">
+                            <span class="text-slate-400">Total Weight</span>
+                            <span class="font-mono text-white font-semibold">{{ parcel.package_details.weight }}</span>
+                        </div>
+                        <div class="flex justify-between py-1.5 border-b border-slate-800">
+                            <span class="text-slate-400">Dimensions</span>
+                            <span class="font-mono text-white font-semibold">{{ parcel.package_details.dimensions }}</span>
+                        </div>
+                        <div class="flex justify-between py-1.5 border-b border-slate-800">
+                            <span class="text-slate-400">Declared Value</span>
+                            <span class="font-mono text-white font-semibold">{{ parcel.package_details.declared_value }}</span>
+                        </div>
+                        <div class="flex justify-between py-1.5 border-b border-slate-800">
+                            <span class="text-slate-400">Signature Required</span>
+                            <span class="font-mono {% if parcel.package_details.signature_required %}text-amber-400{% else %}text-slate-400{% endif %} font-semibold">
+                                {% if parcel.package_details.signature_required %}YES (ID Mandated){% else %}NO{% endif %}
+                            </span>
+                        </div>
+                        <div class="flex justify-between py-1.5">
+                            <span class="text-slate-400">Insurance</span>
+                            <span class="font-mono text-emerald-400 font-semibold">Covered (Full Value)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Destination Card -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                    <h3 class="text-xs uppercase font-bold tracking-wider text-slate-400 font-mono mb-3">Delivery Destination</h3>
+                    <div class="text-sm font-bold text-white mb-1">{{ parcel.recipient.name }}</div>
+                    <div class="text-xs text-slate-400 leading-relaxed font-mono">
+                        {{ parcel.recipient.address }}<br>
+                        {{ parcel.recipient.city }}, {{ parcel.recipient.postal_code }}<br>
+                        {{ parcel.recipient.country }}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        {% endif %}
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/80 py-8 bg-slate-950 mt-16">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 font-mono">
+            &copy; 2026 DELIMOVI Logistics Infrastructure. Built on Flask & Jinja2.
+        </div>
+    </footer>
+</body>
+</html>

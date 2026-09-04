@@ -1,0 +1,6 @@
+{
+  "name": "Delimovi",
+  "description": "Professional parcel tracking and logistics platform with real-time package monitoring, live status timelines, and courier management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

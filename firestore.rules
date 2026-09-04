@@ -1,0 +1,9 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Parcels / consignments collection: public read and write for real-time tracking demo
+    match /parcels/{parcelId} {
+      allow read, write: if true;
+    }
+  }
+}
