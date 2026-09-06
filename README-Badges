@@ -1,0 +1,3 @@
+main  ←  release  ←  develop  ←  feature branches
+  ↑         ↑          ↑
+hotfix  ←———————       |
