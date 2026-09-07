@@ -1,3 +1,8 @@
+main  ←  release  ←  develop  ←  feature branches
+  ↑         ↑          ↑
+hotfix  ←———————       |
+
+
 ## 🏅 Badges
 
 ![GitHub last commit](https://img.shields.io/github/last-commit/your-username/your-repo)
